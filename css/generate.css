@@ -1,0 +1,25 @@
+:root{
+    --ink:#101418;
+    --paper:#F6F3EC;
+    --green:#0B6E4F;
+    --blue:#3AA9DA;
+    --red:#C1272D;
+    --gold:#D9A93A;
+    --white:#FFFFFF;
+    --line: rgba(20,20,20,0.12);
+}
+
+*{
+    box-sizing:border-box;
+}
+  
+html{
+    scroll-behavior:smooth;
+}
+
+body{
+    margin:0;
+    font-family: 'Space Grotesk', system-ui, -apple-system, sans-serif;
+    background: var(--paper);
+    color: var(--ink);
+}

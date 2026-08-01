@@ -1,0 +1,23 @@
+:root{
+    --ink:#141414;
+    --paper:#F6F3EC;
+    --green:#0B6E4F;
+    --blue:#3AA9DA;
+    --red:#C1272D;
+    --line: rgba(20,20,20,0.12);
+}
+
+*{
+    box-sizing:border-box;
+}
+
+body{
+    margin:0;
+    font-family: 'Space Grotesk', system-ui, -apple-system, sans-serif;
+    background:
+      radial-gradient(1100px 500px at 90% -10%, rgba(11,110,79,0.10), transparent 60%),
+      radial-gradient(900px 500px at -10% 10%, rgba(193,39,45,0.09), transparent 60%),
+      var(--paper);
+    color: var(--ink);
+    min-height:100vh;
+}
