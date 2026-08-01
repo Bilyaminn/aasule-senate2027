@@ -38,7 +38,7 @@ document.getElementById('userPhoto').addEventListener('change', (e)=>{
       document.getElementById('zoomRange').value = 1;
       renderCropPreview();
       draw();
-    };
+};
     img.src = ev.target.result;
   };
   reader.readAsDataURL(file);
@@ -241,7 +241,6 @@ function draw(){
   ctx.fillText('NASARAWA', x0+32, cy-4);
   ctx.fillText('NORTH', x0+32, cy+20);
 
-  // ===== your photo — big square with rounded corners, between location and pill =====
   const eside = 300;
   const esx = x0, esy = cy+52;
   const radius = 24;
@@ -281,7 +280,6 @@ function draw(){
 
   cy = esy + eside + 34;
 
-  // green pill "MY VOTE IS FOR"
   ctx.font = '800 20px "Space Grotesk", sans-serif';
   const pillText = 'MY VOTE IS FOR';
   const pillTextW = ctx.measureText(pillText).width;
@@ -350,7 +348,6 @@ function draw(){
   ctx.strokeStyle = GREEN;
   ctx.beginPath(); ctx.moveTo(x0, cy+6); ctx.lineTo(x0+230, cy+6); ctx.stroke();
 
-  // ===== APC row, following the office block with a moderate gap =====
   const apcY = cy+170;
   drawLogo(x0+34, apcY, 66);
   ctx.strokeStyle = 'rgba(20,20,20,0.25)'; ctx.lineWidth = 2;
@@ -370,15 +367,18 @@ function draw(){
   ctx.textAlign = 'left';
 }
 
-document.getElementById('openFallback').addEventListener('click', (e)=>{
-  e.preventDefault();
-  const w = window.open('', '_blank');
-  if(w){
-    w.document.write('<title>Your poster</title><body style="margin:0;background:#111;display:flex;align-items:center;justify-content:center;min-height:100vh;"><img src="'+canvas.toDataURL('image/png')+'" style="max-width:100%;height:auto;"></body>');
-  } else {
-    alert('Please allow pop-ups for this site, then try again.');
-  }
-});
+const openFallbackEl = document.getElementById('openFallback');
+if(openFallbackEl){
+  openFallbackEl.addEventListener('click', (e)=>{
+    e.preventDefault();
+    const w = window.open('', '_blank');
+    if(w){
+      w.document.write('<title>Your poster</title><body style="margin:0;background:#111;display:flex;align-items:center;justify-content:center;min-height:100vh;"><img src="'+canvas.toDataURL('image/png')+'" style="max-width:100%;height:auto;"></body>');
+    } else {
+      alert('Please allow pop-ups for this site, then try again.');
+    }
+  });
+}
 
 document.getElementById('downloadBtn').addEventListener('click', ()=>{
   const filename = 'campaign-poster.png';
