@@ -23,3 +23,71 @@ body{
     background: var(--paper);
     color: var(--ink);
 }
+
+.wrap{ max-width: 1120px; margin: 0 auto; padding: 28px 18px 60px; }
+.topstripe{ height:6px; background: linear-gradient(90deg, var(--green) 0 33%, var(--blue) 33% 66%, var(--red) 66% 100%); }
+header{ margin-bottom: 26px; display:flex; align-items:flex-start; justify-content:space-between; gap:20px; flex-wrap:wrap; }
+.eyebrow{ text-transform: uppercase; letter-spacing: 0.18em; font-size: 11px; font-weight: 700; color: var(--red); }
+h1{ font-family: 'Archivo Black', Georgia, serif; font-size: clamp(26px, 4vw, 38px); margin: 6px 0 8px; letter-spacing: -0.01em; }
+.sub{ color: #55564f; font-size: 14.5px; max-width: 62ch; line-height: 1.55; }
+.homelink{
+font-size:13px; font-weight:700; text-decoration:none; color:var(--ink);
+border:2px solid var(--ink); padding:9px 16px; border-radius:999px; white-space:nowrap;
+transition: all .15s ease; flex-shrink:0;
+}
+.homelink:hover{ background:var(--ink); color:#fff; }
+.grid{ display:grid; grid-template-columns: 340px 1fr; gap: 26px; margin-top: 26px; }
+@media (max-width: 860px){
+.grid{grid-template-columns: 1fr;}
+.grid > div:last-child{ order: -1; }
+}
+.panel{
+background: #FFFFFF; border: 1px solid var(--line); border-radius: 18px; padding: 24px;
+box-shadow: 0 2px 4px rgba(20,20,20,0.04), 0 12px 28px rgba(20,20,20,0.06);
+}
+.field{margin-bottom:18px;}
+label{ display:block; font-size: 11.5px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.08em; color: var(--green); margin-bottom: 7px; }
+input[type=text]{
+    width:100%; padding: 12px 14px; border: 1.5px solid var(--line); border-radius: 10px;
+    font-size: 16px; font-family: inherit; background: #FBFAF7; color: var(--ink);
+}
+.upload{
+    border: 2px dashed var(--line); border-radius: 14px; padding: 22px 14px;
+    text-align:center; cursor:pointer; background: #FBFAF7;
+    transition: border-color .15s ease, background .15s ease; position: relative;
+    touch-action: manipulation;
+}
+.upload:hover{ border-color: var(--red); background:#fff; }
+.upload input{ position:absolute; inset:0; opacity:0; cursor:pointer; }
+.upload .hint{ font-size: 13px; color:#777; font-weight:600; }
+.thumb{ width: 64px; height:64px; border-radius:50%; object-fit:cover; display:block; margin: 0 auto 10px; border: 2px solid var(--green); }
+.cropperWrap{
+    width: 100%; max-width: 260px; aspect-ratio: 1/1; margin: 0 auto;
+    border-radius: 14px; overflow: hidden; border: 1.5px solid var(--line);
+    background: #eee; touch-action: none; cursor: grab;
+}
+.cropperWrap:active{ cursor: grabbing; }
+#cropCanvas{ width: 100%; height: 100%; display:block; touch-action: none; }
+#zoomRange{
+    width: 100%; margin-top: 12px; accent-color: var(--green); touch-action: manipulation;
+}
+.canvasholder{ display:flex; align-items:flex-start; justify-content:center; background:linear-gradient(180deg,#fff,#fbfaf7); padding: 20px; border-radius:18px; }
+canvas{ width: 100%; max-width: 560px; height: auto; border-radius: 4px; box-shadow: 0 18px 40px rgba(20,20,20,0.22); display:block; }
+.actions{ display:flex; gap: 10px; margin-top: 18px; }
+button{
+    font-family: 'Space Grotesk', sans-serif; font-size: 15px; font-weight: 700; padding: 15px 22px;
+    border-radius: 999px; border: none; cursor:pointer; letter-spacing: 0.02em;
+    min-height: 50px; touch-action: manipulation; flex: 1;
+    transition: transform .12s ease, box-shadow .12s ease, background .15s ease;
+}
+.primary{ background: linear-gradient(135deg, var(--green), #0d5940); color: #fff; box-shadow: 0 8px 20px rgba(11,110,79,0.35); }
+.primary:hover{ transform: translateY(-2px); box-shadow: 0 12px 26px rgba(11,110,79,0.42); }
+.note{ font-size: 12.5px; color: #666; margin-top: 16px; line-height: 1.6; border-top: 1px solid var(--line); padding-top: 14px; }
+.note a{ color: var(--red); font-weight:700; }
+footer{ text-align:center; font-size:12px; color:#a4a498; margin-top: 40px; }
+
+@media (max-width: 480px)
+  { .wrap{ padding: 18px 14px 40px; } 
+  h1{ font-size: 24px; } 
+  .panel{ padding: 18px; }
+}
