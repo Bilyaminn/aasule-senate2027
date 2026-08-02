@@ -27,9 +27,7 @@ body{
 .wrap{ max-width: 1120px; margin: 0 auto; padding: 28px 18px 60px; }
 .topstripe{ height:6px; background: linear-gradient(90deg, var(--green) 0 33%, var(--blue) 33% 66%, var(--red) 66% 100%); }
 header{ margin-bottom: 26px; display:flex; align-items:flex-start; justify-content:space-between; gap:20px; flex-wrap:wrap; }
-.eyebrow{ text-transform: uppercase; letter-spacing: 0.18em; font-size: 11px; font-weight: 700; color: var(--red); }
 h1{ font-family: 'Archivo Black', Georgia, serif; font-size: clamp(26px, 4vw, 38px); margin: 6px 0 8px; letter-spacing: -0.01em; }
-.sub{ color: #55564f; font-size: 14.5px; max-width: 62ch; line-height: 1.55; }
 .homelink{
 font-size:13px; font-weight:700; text-decoration:none; color:var(--ink);
 border:2px solid var(--ink); padding:9px 16px; border-radius:999px; white-space:nowrap;
@@ -39,7 +37,7 @@ transition: all .15s ease; flex-shrink:0;
 .grid{ display:grid; grid-template-columns: 340px 1fr; gap: 26px; margin-top: 26px; }
 @media (max-width: 860px){
 .grid{grid-template-columns: 1fr;}
-.grid > div:last-child{ order: -1; }
+.grid > div:last-child{ order: 1; }
 }
 .panel{
 background: #FFFFFF; border: 1px solid var(--line); border-radius: 18px; padding: 24px;
