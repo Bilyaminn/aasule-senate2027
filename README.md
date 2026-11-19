@@ -62,14 +62,29 @@ Project location/status filters are derived from the text already present in the
 
 ## Add your own project photos
 1. Run the site locally (`python -m http.server 8000`) and open `http://localhost:8000/manage-project-photos.html`. (The manager is excluded from deployment by `.vercelignore` on purpose.)
-2. Pick a project, choose a JPG/PNG/WebP image (up to 15 MB). It is automatically resized (max 1400 px) and converted to WebP, so typical files are 60–200 KB.
-3. Add alt text and save. Repeat for other projects. Drafts persist in your browser; use **Save backup** to keep an editable copy.
-4. Click **Export website package (.zip)**. Unzip it into the site's main folder, beside `index.html`. It contains `project-photo-overrides.json` and `assets/projects/*.webp`. Redeploy.
+2. Select up to five JPG/PNG/WebP photos for the project (up to 15 MB each). Images are resized (max 1400 px) and optimised for the web. You can add photos in batches until the project has five.
+3. Add an image description and click **Add photos to this project**. The card displays a photo gallery with thumbnails, previous/next controls and a photo count. Drafts persist in your browser; use **Save backup** to keep an editable copy.
+4. Click **Export website package (.zip)**. Unzip it into the site's main folder, beside `index.html`. It contains `project-photo-overrides.json` and up to five files per project in `assets/projects/`. Redeploy.
 
-Projects without a photo show a neutral category tile (visitors never see an "add photo" prompt; the owner prompt appears only on localhost or with `?admin` in the URL). Clicking a photo opens an accessible lightbox. Manifest entries may use `src` (preferred, a path under `assets/projects/`) or a legacy embedded `dataUrl`; both are validated before use.
+Projects without a photo show a neutral category tile (visitors never see an "add photo" prompt; the owner prompt appears only on localhost or with `?admin` in the URL). Clicking a photo opens an accessible lightbox. The manifest supports multiple `photos` per project (up to five) and still reads the older single-photo format. Photos are self-hosted under `assets/projects/`; clicking the main image opens the accessible lightbox.
 
 ## Review pass — fixes
 - Poster: Premium template text/pill/watermark contrast fixed (dark text on gold, light watermark on dark); photo upload uses object URLs instead of base64 strings; `pointercancel` handled while dragging.
 - Projects: embedded `data:` photo links (blocked by modern browsers) replaced with a lightbox; manifest cached with revalidation instead of `no-store`; manifest values validated; all external links get `rel="noopener noreferrer"`; broken photos fall back to a tile.
 - Photo manager: client-side resize/WebP, ZIP export with real image files (no multi-megabyte JSON on the homepage), backup/restore, stricter import validation.
 - Hosting: `.vercelignore` keeps the admin tool and docs out of production; `X-Robots-Tag: noindex` for the manager; sensible cache headers.
+
+
+## Adding new projects later
+
+You can add projects at any time without editing HTML manually:
+
+1. Run the site locally with a local web server (do not open the manager as a standalone `file://` page).
+2. Open `manage-project-photos.html`.
+3. Use **Add a new project** to enter the title, location, category, status, date/year, description and optional source URL.
+4. Select the new project in the project selector and add up to five photographs.
+5. Choose **Export website package (.zip)**.
+6. Unzip the downloaded package into the website's main folder beside `index.html`, replacing `project-photo-overrides.json` and adding/replacing the `assets/projects/` images.
+7. Deploy the updated website. The new project card will then appear in the project register and its photos will display on the card.
+
+New project records are stored in the `_projects` array inside `project-photo-overrides.json`; the website builds their cards automatically. Use **Save backup** to keep a separate editable backup of both custom projects and photo selections.

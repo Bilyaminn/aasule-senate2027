@@ -34,7 +34,7 @@ A hybrid of premium editorial presentation, modern interaction and institutional
 - HTML parsing checks found no duplicate IDs, missing image alt attributes or broken in-page anchors in the three HTML pages.
 
 ## Important remaining work before public launch
-1. **Project photography:** Add licensed or self-owned photos with the Project Photo Manager (see README). Until then each project shows a neutral category tile.
+1. **Project photography:** Add 3–5 licensed or self-owned photos per project with the Project Photo Manager (see README). The uploaded source archive contained an empty `project-photo-overrides.json` and no `assets/projects/` images; photos stored only in a previous browser session may be recoverable from that same browser profile, otherwise they must be reselected and exported.
 2. **Map experience:** The current location filter uses the locations already written in project metadata. A trustworthy interactive Nasarawa LGA map requires an authoritative boundary/GeoJSON file and verified coordinates for each project. These were not present in the supplied project, so no guessed map pins or boundaries were added.
 3. **Content verification:** Re-check every source URL, status, date and financial figure before publication. This site is not an independent audit.
 4. **Deployment metadata:** Add the final canonical domain and absolute Open Graph image URLs once the production domain is known.

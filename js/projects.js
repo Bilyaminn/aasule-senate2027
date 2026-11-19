@@ -1,5 +1,28 @@
-(() => {
+(async () => {
   'use strict';
+  const projectManifest = await fetch('project-photo-overrides.json', {cache:'no-cache'})
+    .then(response => response.ok ? response.json() : {})
+    .catch(() => ({}));
+  const projectGrid = document.querySelector('.projects-grid');
+  const extraProjects = Array.isArray(projectManifest?._projects) ? projectManifest._projects : [];
+  const validCategories = new Set(['infrastructure','industry','health','agriculture']);
+  extraProjects.forEach(project => {
+    if (!project || typeof project.title !== 'string' || !project.title.trim()) return;
+    const card = document.createElement('article');
+    card.className = 'project-card';
+    card.dataset.category = validCategories.has(project.category) ? project.category : 'infrastructure';
+    const photo = document.createElement('div'); photo.className = 'project-photo no-photo'; photo.setAttribute('role','img'); photo.setAttribute('aria-label','Project photo can be added with the photo manager');
+    const photoLabel = document.createElement('span'); photoLabel.textContent = 'PROJECT PHOTOS';
+    const photoNote = document.createElement('small'); photoNote.textContent = 'Use the project photo manager to add local images'; photo.append(photoLabel, photoNote);
+    const body = document.createElement('div'); body.className = 'project-body';
+    const meta = document.createElement('span'); meta.className = 'project-meta';
+    meta.textContent = `${String(project.location || 'LOCATION NOT SPECIFIED').toUpperCase()} · ${String(project.status || 'REPORTED').toUpperCase()}${project.date ? ` ${String(project.date).toUpperCase()}` : ''}`;
+    const title = document.createElement('h3'); title.textContent = project.title.trim();
+    const description = document.createElement('p'); description.textContent = project.description || 'Project details to be updated.';
+    body.append(meta, title, description);
+    if (project.sourceUrl && /^https:\/\//i.test(project.sourceUrl)) { const link=document.createElement('a'); link.href=project.sourceUrl; link.target='_blank'; link.rel='noopener noreferrer'; link.textContent=(project.sourceLabel || 'Project report')+' ↗'; body.append(link); }
+    card.append(photo, body); projectGrid?.append(card);
+  });
   const cards = [...document.querySelectorAll('.project-card')];
   const categoryButtons = [...document.querySelectorAll('.filter-btn')];
   const search = document.getElementById('projectSearch');
@@ -81,29 +104,51 @@
     if (typeof lightbox.showModal === 'function') lightbox.showModal(); else lightbox.setAttribute('open', '');
   };
 
-  // ---- owner photos: same-site manifest; entries use either a file path (preferred) or an embedded data URL ----
+  // ---- owner photos: up to five locally hosted photographs per project ----
   const SAFE_SRC = /^assets\/projects\/[a-z0-9-]+\.(webp|jpe?g|png)$/i;
   const SAFE_DATA = /^data:image\/(jpeg|png|webp);base64,[A-Za-z0-9+/=]+$/;
-  fetch('project-photo-overrides.json', {cache: 'no-cache'})
-    .then(response => response.ok ? response.json() : {})
+  Promise.resolve(projectManifest)
     .then(manifest => {
       if (!manifest || typeof manifest !== 'object') return;
       records.forEach(record => {
-        const photo = manifest[record.card.dataset.projectKey];
-        const src = photo && (SAFE_SRC.test(photo.src || '') ? photo.src : (SAFE_DATA.test(photo.dataUrl || '') ? photo.dataUrl : ''));
+        const raw = manifest[record.card.dataset.projectKey];
+        if (!raw) return;
+        // Accept the current multi-photo format and the previous single-photo format.
+        let items = Array.isArray(raw) ? raw : (Array.isArray(raw.photos) ? raw.photos : [raw]);
+        items = items.slice(0,5).map(item => ({
+          src: SAFE_SRC.test(item?.src || '') ? item.src : (SAFE_DATA.test(item?.dataUrl || '') ? item.dataUrl : ''),
+          alt: clean(item?.alt) || `${record.title} project photograph`
+        })).filter(item => item.src);
+        if (!items.length) return;
         const holder = record.card.querySelector('.project-photo');
-        if (!src || !holder) return;
-        const alt = clean(photo.alt) || `${record.title} project photograph`;
-        const image = new Image();
-        image.alt = alt; image.loading = 'lazy'; image.decoding = 'async';
-        image.addEventListener('error', () => { const tile = document.createElement('div'); tile.className = 'project-photo no-photo'; dress(tile, record); button.replaceWith(tile); }, {once:true});
-        image.src = src;
-        const button = document.createElement('button');
-        button.type = 'button'; button.className = 'project-photo has-photo';
-        button.setAttribute('aria-label', `View photograph: ${record.title}`);
-        button.addEventListener('click', () => openPhoto(src, alt, record.title));
-        button.append(image);
-        holder.replaceWith(button);
+        if (!holder) return;
+        const gallery = document.createElement('div'); gallery.className = 'project-gallery';
+        const main = document.createElement('button'); main.type = 'button'; main.className = 'project-photo has-photo';
+        const image = new Image(); image.alt = items[0].alt; image.loading = 'lazy'; image.decoding = 'async';
+        main.setAttribute('aria-label', `View photograph 1 of ${items.length}: ${record.title}`); main.append(image);
+        const counter = document.createElement('span'); counter.className = 'project-photo-count'; counter.setAttribute('aria-live','polite');
+        const previous = document.createElement('button'); previous.type='button'; previous.className='project-photo-arrow previous'; previous.textContent='‹'; previous.setAttribute('aria-label','Previous project photo');
+        const next = document.createElement('button'); next.type='button'; next.className='project-photo-arrow next'; next.textContent='›'; next.setAttribute('aria-label','Next project photo');
+        const thumbs = document.createElement('div'); thumbs.className='project-photo-thumbs'; thumbs.setAttribute('aria-label',`${record.title} photo thumbnails`);
+        let active = 0;
+        function show(index) {
+          active = (index + items.length) % items.length;
+          image.src = items[active].src; image.alt = items[active].alt;
+          main.setAttribute('aria-label',`View photograph ${active+1} of ${items.length}: ${record.title}`);
+          counter.textContent = `${active+1} / ${items.length}`;
+          [...thumbs.children].forEach((thumb,i) => { thumb.classList.toggle('active',i===active); thumb.setAttribute('aria-pressed',String(i===active)); });
+        }
+        items.forEach((item,index) => {
+          const thumb = document.createElement('button'); thumb.type='button'; thumb.className='project-photo-thumb'; thumb.setAttribute('aria-label',`Show photograph ${index+1} of ${items.length}`); thumb.setAttribute('aria-pressed',String(index===0));
+          const thumbImg = new Image(); thumbImg.src=item.src; thumbImg.alt=''; thumbImg.loading='lazy'; thumb.append(thumbImg);
+          thumb.addEventListener('click',()=>show(index)); thumbs.append(thumb);
+        });
+        main.addEventListener('click',()=>openPhoto(items[active].src,items[active].alt,`${record.title} · Photo ${active+1} of ${items.length}`));
+        previous.addEventListener('click',()=>show(active-1)); next.addEventListener('click',()=>show(active+1));
+        image.addEventListener('error',()=>{ const tile=document.createElement('div');tile.className='project-photo no-photo';dress(tile,record);gallery.replaceWith(tile);},{once:true});
+        gallery.append(main,counter);
+        if(items.length>1){gallery.append(previous,next,thumbs);} else {counter.hidden=true;}
+        show(0); holder.replaceWith(gallery);
       });
     })
     .catch(() => { /* no manifest yet: neutral tiles stay */ });
