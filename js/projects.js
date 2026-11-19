@@ -11,6 +11,7 @@
     const card = document.createElement('article');
     card.className = 'project-card';
     card.dataset.category = validCategories.has(project.category) ? project.category : 'infrastructure';
+    card.dataset.custom = '1';
     const photo = document.createElement('div'); photo.className = 'project-photo no-photo'; photo.setAttribute('role','img'); photo.setAttribute('aria-label','Project photo can be added with the photo manager');
     const photoLabel = document.createElement('span'); photoLabel.textContent = 'PROJECT PHOTOS';
     const photoNote = document.createElement('small'); photoNote.textContent = 'Use the project photo manager to add local images'; photo.append(photoLabel, photoNote);
@@ -23,7 +24,15 @@
     if (project.sourceUrl && /^https:\/\//i.test(project.sourceUrl)) { const link=document.createElement('a'); link.href=project.sourceUrl; link.target='_blank'; link.rel='noopener noreferrer'; link.textContent=(project.sourceLabel || 'Project report')+' ↗'; body.append(link); }
     card.append(photo, body); projectGrid?.append(card);
   });
-  const cards = [...document.querySelectorAll('.project-card')];
+  // Projects the owner deleted in the manager are removed for visitors (kept hidden inside the manager preview).
+  const managerMode = /[?&]manager\b/.test(location.search);
+  const keyOf = title => title.toLowerCase().normalize('NFKD').replace(/[\u0300-\u036f]/g, '').replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '');
+  const deletedKeys = new Set(Array.isArray(projectManifest?._deleted) ? projectManifest._deleted.filter(k => typeof k === 'string') : []);
+  document.querySelectorAll('.project-card').forEach(card => {
+    if (!deletedKeys.has(keyOf((card.querySelector('h3')?.textContent || '').trim()))) return;
+    if (managerMode) { card.hidden = true; card.dataset.deleted = '1'; } else card.remove();
+  });
+  const cards = [...document.querySelectorAll('.project-card:not([data-deleted])')];
   const categoryButtons = [...document.querySelectorAll('.filter-btn')];
   const search = document.getElementById('projectSearch');
   const statusSelect = document.getElementById('projectStatusFilter');
@@ -107,6 +116,7 @@
   // ---- owner photos: up to five locally hosted photographs per project ----
   const SAFE_SRC = /^assets\/projects\/[a-z0-9-]+\.(webp|jpe?g|png)$/i;
   const SAFE_DATA = /^data:image\/(jpeg|png|webp);base64,[A-Za-z0-9+/=]+$/;
+  const photoVersion = projectManifest?._version ? String(projectManifest._version).replace(/[^0-9a-z-]/gi, '') : '';
   Promise.resolve(projectManifest)
     .then(manifest => {
       if (!manifest || typeof manifest !== 'object') return;
@@ -116,7 +126,7 @@
         // Accept the current multi-photo format and the previous single-photo format.
         let items = Array.isArray(raw) ? raw : (Array.isArray(raw.photos) ? raw.photos : [raw]);
         items = items.slice(0,5).map(item => ({
-          src: SAFE_SRC.test(item?.src || '') ? item.src : (SAFE_DATA.test(item?.dataUrl || '') ? item.dataUrl : ''),
+          src: SAFE_SRC.test(item?.src || '') ? item.src + (photoVersion ? `?v=${photoVersion}` : '') : (SAFE_DATA.test(item?.dataUrl || '') ? item.dataUrl : ''),
           alt: clean(item?.alt) || `${record.title} project photograph`
         })).filter(item => item.src);
         if (!items.length) return;
@@ -125,7 +135,7 @@
         const gallery = document.createElement('div'); gallery.className = 'project-gallery';
         const main = document.createElement('button'); main.type = 'button'; main.className = 'project-photo has-photo';
         const image = new Image(); image.alt = items[0].alt; image.loading = 'lazy'; image.decoding = 'async';
-        main.setAttribute('aria-label', `View photograph 1 of ${items.length}: ${record.title}`); main.append(image);
+        main.append(image);
         const counter = document.createElement('span'); counter.className = 'project-photo-count'; counter.setAttribute('aria-live','polite');
         const previous = document.createElement('button'); previous.type='button'; previous.className='project-photo-arrow previous'; previous.textContent='‹'; previous.setAttribute('aria-label','Previous project photo');
         const next = document.createElement('button'); next.type='button'; next.className='project-photo-arrow next'; next.textContent='›'; next.setAttribute('aria-label','Next project photo');
@@ -138,17 +148,33 @@
           counter.textContent = `${active+1} / ${items.length}`;
           [...thumbs.children].forEach((thumb,i) => { thumb.classList.toggle('active',i===active); thumb.setAttribute('aria-pressed',String(i===active)); });
         }
-        items.forEach((item,index) => {
-          const thumb = document.createElement('button'); thumb.type='button'; thumb.className='project-photo-thumb'; thumb.setAttribute('aria-label',`Show photograph ${index+1} of ${items.length}`); thumb.setAttribute('aria-pressed',String(index===0));
-          const thumbImg = new Image(); thumbImg.src=item.src; thumbImg.alt=''; thumbImg.loading='lazy'; thumb.append(thumbImg);
-          thumb.addEventListener('click',()=>show(index)); thumbs.append(thumb);
-        });
+        function buildThumbs() {
+          thumbs.replaceChildren();
+          items.forEach((item,index) => {
+            const thumb = document.createElement('button'); thumb.type='button'; thumb.className='project-photo-thumb'; thumb.setAttribute('aria-label',`Show photograph ${index+1} of ${items.length}`);
+            const thumbImg = new Image(); thumbImg.src=item.src; thumbImg.alt=''; thumbImg.loading='lazy'; thumbImg.decoding='async'; thumb.append(thumbImg);
+            thumb.addEventListener('click',()=>show(index)); thumbs.append(thumb);
+          });
+          const many = items.length > 1;
+          previous.hidden = next.hidden = thumbs.hidden = counter.hidden = !many;
+        }
         main.addEventListener('click',()=>openPhoto(items[active].src,items[active].alt,`${record.title} · Photo ${active+1} of ${items.length}`));
         previous.addEventListener('click',()=>show(active-1)); next.addEventListener('click',()=>show(active+1));
-        image.addEventListener('error',()=>{ const tile=document.createElement('div');tile.className='project-photo no-photo';dress(tile,record);gallery.replaceWith(tile);},{once:true});
-        gallery.append(main,counter);
-        if(items.length>1){gallery.append(previous,next,thumbs);} else {counter.hidden=true;}
-        show(0); holder.replaceWith(gallery);
+        // A slow or dropped mobile connection must not delete the gallery: retry once, then skip only the broken photo.
+        const retried = new Set();
+        image.addEventListener('error',()=>{
+          const failing = items[active]; if (!failing) return;
+          if (!retried.has(failing.src) && !failing.src.startsWith('data:')) {
+            retried.add(failing.src);
+            setTimeout(() => { image.src = `${failing.src}${failing.src.includes('?') ? '&' : '?'}r=${Date.now()}`; }, 900);
+            return;
+          }
+          items.splice(active,1);
+          if (!items.length) { const tile=document.createElement('div'); tile.className='project-photo no-photo'; dress(tile,record); gallery.replaceWith(tile); return; }
+          buildThumbs(); show(active % items.length);
+        });
+        gallery.append(main,counter,previous,next,thumbs);
+        buildThumbs(); show(0); holder.replaceWith(gallery);
       });
     })
     .catch(() => { /* no manifest yet: neutral tiles stay */ });

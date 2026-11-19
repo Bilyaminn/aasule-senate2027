@@ -4,7 +4,7 @@
   const select = $('projectSelect'), input = $('photoInput'), previewWrap = $('previewWrap');
   const save = $('savePhoto'), list = $('photoList'), status = $('managerStatus'), frame = $('projectSource');
   const DB_NAME = 'aasule-project-photo-manager';
-  let projects = [], photos = {}, customProjects = [], pending = [], database;
+  let projects = [], photos = {}, customProjects = [], deletedKeys = [], pending = [], database;
   const slug = value => value.toLowerCase().normalize('NFKD').replace(/[\u0300-\u036f]/g, '').replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '');
   const selected = () => projects.find(item => item.key === select.value);
   const say = message => { status.textContent = message; };
@@ -34,6 +34,14 @@
       request.onerror = () => reject(request.error);
     });
   }
+  async function readRaw(key) {
+    const db = await openDatabase();
+    return new Promise((resolve, reject) => { const request = db.transaction('drafts').objectStore('drafts').get(key); request.onsuccess = () => resolve(request.result); request.onerror = () => reject(request.error); });
+  }
+  async function clearDraft() {
+    const db = await openDatabase();
+    return new Promise(resolve => { const tx = db.transaction('drafts','readwrite'); tx.objectStore('drafts').clear(); tx.oncomplete = resolve; tx.onerror = resolve; });
+  }
   const loadDraft = () => readDraft('photos');
   const loadProjectDraft = () => readDraft('projects');
   const persist = () => {
@@ -42,6 +50,7 @@
       const tx = database.transaction('drafts', 'readwrite');
       tx.objectStore('drafts').put(photos, 'photos');
       tx.objectStore('drafts').put(customProjects, 'projects');
+      tx.objectStore('drafts').put(deletedKeys, 'deleted');
       tx.onerror = () => say('Browser storage could not save this draft. Export a backup to keep your photos and projects.');
     } catch { say('Browser storage could not save this draft. Export a backup to keep your photos and projects.'); }
   };
@@ -73,14 +82,37 @@
   async function loadPublishedProjects() {
     try { const response = await fetch('project-photo-overrides.json', {cache:'no-cache'}); if (!response.ok) return []; const manifest = await response.json(); return Array.isArray(manifest._projects) ? manifest._projects : []; } catch { return []; }
   }
+  async function loadPublishedDeleted() {
+    try { const response = await fetch('project-photo-overrides.json', {cache:'no-cache'}); if (!response.ok) return []; const manifest = await response.json(); return Array.isArray(manifest._deleted) ? manifest._deleted.filter(k => typeof k === 'string') : []; } catch { return []; }
+  }
+  const isDeleted = key => deletedKeys.includes(key);
+  function rebuildSelect(preferred) {
+    const keep = preferred || select.value;
+    select.replaceChildren();
+    projects.filter(item => !isDeleted(item.key)).forEach(project => { const option = document.createElement('option'); option.value = project.key; option.textContent = project.title; select.append(option); });
+    if (keep && [...select.options].some(option => option.value === keep)) select.value = keep;
+  }
   function addProjectOption(project) {
     if (projects.some(item => item.key === project.key)) return;
-    projects.push(project);
-    const option = document.createElement('option'); option.value = project.key; option.textContent = project.title; select.append(option);
+    projects.push({...project, custom:true});
+    rebuildSelect(project.key);
+  }
+  function renderDeleted() {
+    const box = $('deletedList'); box.replaceChildren();
+    const gone = projects.filter(item => isDeleted(item.key));
+    if (!gone.length) { const p = document.createElement('p'); p.className = 'pm-help'; p.textContent = 'No deleted projects.'; box.append(p); return; }
+    const heading = document.createElement('strong'); heading.className = 'pm-group-title'; heading.textContent = `Deleted projects (${gone.length}) — hidden after you export and redeploy`; box.append(heading);
+    gone.forEach(project => {
+      const row = document.createElement('div'); row.className = 'pm-list-item';
+      const info = document.createElement('div'); const name = document.createElement('small'); name.textContent = project.title; info.append(name);
+      const restore = document.createElement('button'); restore.className = 'pm-secondary'; restore.type = 'button'; restore.textContent = 'Restore';
+      restore.addEventListener('click', () => { deletedKeys = deletedKeys.filter(key => key !== project.key); persist(); rebuildSelect(project.key); renderDeleted(); refresh(); updateCurrent(); say(`“${project.title}” restored. Export the website package to publish this change.`); });
+      row.append(info, restore); box.append(row);
+    });
   }
   function refresh() {
     list.replaceChildren();
-    const entries = Object.entries(photos);
+    const entries = Object.entries(photos).filter(([key]) => !isDeleted(key));
     if (!entries.length) { const p = document.createElement('p'); p.textContent = 'No local photos added yet.'; list.append(p); return; }
     entries.forEach(([key, items]) => {
       const project = projects.find(item => item.key === key);
@@ -103,21 +135,20 @@
   frame.addEventListener('load', async () => {
     try {
       const cards = [...frame.contentDocument.querySelectorAll('.project-card')];
-      projects = cards.map(card => { const title = card.querySelector('h3')?.textContent.trim() || 'Untitled project'; return {title, key:slug(title)}; });
-      select.replaceChildren();
-      projects.forEach(project => { const option = document.createElement('option'); option.value = project.key; option.textContent = project.title; select.append(option); });
+      const builtIn = cards.filter(card => !card.dataset.custom).map(card => { const title = card.querySelector('h3')?.textContent.trim() || 'Untitled project'; return {title, key:slug(title)}; });
       try {
-        const draft = normaliseDraft(await loadDraft());
-        const published = await loadPublishedPhotos();
-        photos = {...published, ...draft};
-        const publishedProjects = await loadPublishedProjects();
-        const draftProjects = await loadProjectDraft();
-        customProjects = [...publishedProjects];
-        (Array.isArray(draftProjects) ? draftProjects : []).forEach(item => { if (item && item.title && !customProjects.some(existing => slug(existing.title) === slug(item.title))) customProjects.push(item); });
-        customProjects.forEach(item => addProjectOption({title:item.title, key:slug(item.title)}));
+        // A saved draft is authoritative (so removals and deletions persist); with no draft yet we start from what is published.
+        const [rawPhotos, rawProjects, rawDeleted] = await Promise.all([readRaw('photos'), readRaw('projects'), readRaw('deleted')]);
+        const published = await loadPublishedPhotos(), publishedProjects = await loadPublishedProjects(), publishedDeleted = await loadPublishedDeleted();
+        photos = rawPhotos ? normaliseDraft(rawPhotos) : published;
+        customProjects = Array.isArray(rawProjects) ? rawProjects.filter(item => item && item.title) : publishedProjects;
+        deletedKeys = Array.isArray(rawDeleted) ? rawDeleted : publishedDeleted;
         persist();
-      } catch { photos = await loadPublishedPhotos(); say('Browser draft storage is unavailable. You can still add and export photos during this session.'); }
-      refresh(); updateCurrent();
+      } catch { photos = await loadPublishedPhotos(); customProjects = await loadPublishedProjects(); deletedKeys = await loadPublishedDeleted(); say('Browser draft storage is unavailable. You can still add and export during this session.'); }
+      projects = [];
+      builtIn.forEach(item => { if (!projects.some(existing => existing.key === item.key)) projects.push({...item, custom:false}); });
+      customProjects.forEach(item => { const key = slug(item.title); if (!projects.some(project => project.key === key)) projects.push({title:item.title, key, custom:true}); });
+      rebuildSelect(); renderDeleted(); refresh(); updateCurrent();
     } catch { select.innerHTML = '<option>Could not read project list</option>'; say('Open this manager from the same website folder/server as index.html.'); }
   });
   function updateCurrent() {
@@ -136,7 +167,7 @@
     if (!title || !location || !description) { say('Please enter the project name, location and description.'); return; }
     if (sourceUrl && !/^https:\/\//i.test(sourceUrl)) { say('The source URL must begin with https://'); return; }
     const key = slug(title);
-    if (projects.some(item => item.key === key)) { say('A project with this name is already in the register. Choose a distinct project name.'); return; }
+    if (projects.some(item => item.key === key)) { say(isDeleted(key) ? 'That project was deleted. Restore it from the Deleted projects list instead.' : 'A project with this name is already in the register. Choose a distinct project name.'); return; }
     const project = {title, location, category:$('newProjectCategory').value, status:$('newProjectStatus').value, date:$('newProjectDate').value.trim(), description, sourceUrl, sourceLabel:$('newProjectSourceLabel').value.trim() || 'Project report'};
     customProjects.push(project);
     addProjectOption({title, key});
@@ -144,6 +175,25 @@
     persist(); updateCurrent();
     $('newProjectTitle').value=''; $('newProjectLocation').value=''; $('newProjectDate').value=''; $('newProjectDescription').value=''; $('newProjectSource').value=''; $('newProjectSourceLabel').value='';
     say(`“${title}” has been added to your project register. You can now add up to five photos. Export the website package to publish the new project.`);
+  });
+  $('deleteProjectButton').addEventListener('click', () => {
+    const project = selected();
+    if (!project) { say('Choose a project in step 01 first.'); return; }
+    const message = project.custom
+      ? `Permanently delete “${project.title}” and its photos?\n\nThis cannot be undone unless you import a backup.`
+      : `Delete “${project.title}” from the website?\n\nIt disappears for visitors after you export and redeploy. You can restore it later from the Deleted projects list.`;
+    if (!window.confirm(message)) return;
+    if (project.custom) {
+      customProjects = customProjects.filter(item => slug(item.title) !== project.key);
+      projects = projects.filter(item => item.key !== project.key);
+      delete photos[project.key];
+    } else if (!isDeleted(project.key)) deletedKeys.push(project.key);
+    persist(); rebuildSelect(); renderDeleted(); refresh(); updateCurrent();
+    say(`“${project.title}” deleted. Export the website package and redeploy to remove it from the live site.`);
+  });
+  $('resetDraftButton').addEventListener('click', async () => {
+    if (!window.confirm('Discard everything saved in this browser (unexported photos, added projects and deletions) and reload from the published website?')) return;
+    await clearDraft(); location.reload();
   });
   select.addEventListener('change', updateCurrent);
   async function optimise(file) {
@@ -187,10 +237,11 @@
       try {
         const parsed = JSON.parse(reader.result);
         const incoming = normaliseDraft(parsed.photos || parsed);
-        if (!Object.keys(incoming).length && !Array.isArray(parsed.projects)) throw new Error();
+        if (!Object.keys(incoming).length && !Array.isArray(parsed.projects) && !Array.isArray(parsed.deleted)) throw new Error();
         Object.entries(incoming).forEach(([key, items]) => { photos[key] = [...(photos[key] || []), ...items].slice(0,5); });
         if (Array.isArray(parsed.projects)) parsed.projects.forEach(item => { if (item?.title && !customProjects.some(existing => slug(existing.title) === slug(item.title))) { customProjects.push(item); addProjectOption({title:item.title,key:slug(item.title)}); } });
-        persist(); refresh(); updateCurrent(); say('Photo and project backup imported. Export the website package when ready to publish.');
+        if (Array.isArray(parsed.deleted)) deletedKeys = [...new Set([...deletedKeys, ...parsed.deleted.filter(k => typeof k === 'string')])];
+        rebuildSelect(); renderDeleted(); persist(); refresh(); updateCurrent(); say('Backup imported. Export the website package when ready to publish.');
       } catch { say('That file is not a valid project photo backup.'); }
     };
     reader.readAsText(file); $('importInput').value='';
@@ -213,8 +264,9 @@
   const download=(blob,name)=>{const url=URL.createObjectURL(blob),a=document.createElement('a');a.href=url;a.download=name;document.body.append(a);a.click();a.remove();setTimeout(()=>URL.revokeObjectURL(url),5000);};
   const dataToBytes=dataUrl=>{const bin=atob(dataUrl.split(',')[1]),out=new Uint8Array(bin.length);for(let i=0;i<bin.length;i++)out[i]=bin.charCodeAt(i);return out;};
   $('exportButton').addEventListener('click',()=>{
-    const entries=Object.entries(photos);if(!entries.length && !customProjects.length){say('Add a project or at least one project photo before exporting.');return;}
-    const manifest={_projects:customProjects},files=[];let count=0;
+    const entries=Object.entries(photos).filter(([key])=>!isDeleted(key));
+    if(!entries.length && !customProjects.length && !deletedKeys.length){say('Add a project, a photo or a deletion before exporting.');return;}
+    const manifest={_version:Date.now().toString(36),_projects:customProjects,_deleted:deletedKeys},files=[];let count=0;
     entries.forEach(([key,items])=>{
       manifest[key]={photos:items.slice(0,5).map((photo,index)=>{
         const ext=photo.dataUrl.startsWith('data:image/webp')?'webp':photo.dataUrl.startsWith('data:image/png')?'png':'jpg';
@@ -223,7 +275,7 @@
     });
     files.unshift({name:'project-photo-overrides.json',data:new TextEncoder().encode(JSON.stringify(manifest,null,2))});
     download(makeZip(files),'project-photos-package.zip');
-    say(`Exported ${customProjects.length} custom project(s) and ${count} photo(s) across ${entries.length} photo set(s). Unzip beside index.html, then redeploy the website.`);
+    say(`Exported ${customProjects.length} added project(s), ${deletedKeys.length} deleted project(s) and ${count} photo(s). Unzip beside index.html (replace existing files), then redeploy. Photo files of deleted projects can be removed from assets/projects.`);
   });
-  $('backupButton').addEventListener('click',()=>{download(new Blob([JSON.stringify({photos,projects:customProjects})],{type:'application/json'}),'project-manager-backup.json');say(`Backup saved (${customProjects.length} custom project(s), ${Object.values(photos).reduce((n,a)=>n+a.length,0)} photo(s)).`);});
+  $('backupButton').addEventListener('click',()=>{download(new Blob([JSON.stringify({photos,projects:customProjects,deleted:deletedKeys})],{type:'application/json'}),'project-manager-backup.json');say(`Backup saved (${customProjects.length} custom project(s), ${Object.values(photos).reduce((n,a)=>n+a.length,0)} photo(s)).`);});
 })();

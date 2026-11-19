@@ -88,3 +88,11 @@ You can add projects at any time without editing HTML manually:
 7. Deploy the updated website. The new project card will then appear in the project register and its photos will display on the card.
 
 New project records are stored in the `_projects` array inside `project-photo-overrides.json`; the website builds their cards automatically. Use **Save backup** to keep a separate editable backup of both custom projects and photo selections.
+
+
+## Latest review — fixes
+- **Photos missing on phones:** CSS/JS were cached for a day (plus 7 days "stale") so phones kept running old scripts. HTML now links `css`/`js` with a version query, scripts/styles/JSON are always revalidated (`vercel.json`), photo URLs carry a `_version` from the manifest, and galleries retry a failed image once and skip only the broken photo instead of replacing the whole gallery.
+- **Delete a project:** manager → step 01B. Built-in projects are hidden (listed under "Deleted projects" with a Restore button); projects you added are removed permanently. Export the package and redeploy for it to go live (`_deleted` in `project-photo-overrides.json`).
+- **Manager drafts:** a saved draft is now authoritative, so removed photos and deletions stay removed after reload. "Reset to published site" discards the browser draft.
+- **Phones:** photo galleries use a slimmer layout (arrows + counter, no thumbnail strip).
+- Removed unused `css/style.css`.

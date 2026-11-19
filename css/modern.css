@@ -87,3 +87,10 @@ button.project-photo.has-photo{border:0;padding:0;width:100%;cursor:zoom-in;back
   .project-body>.project-detail-button{display:inline-flex;align-items:center;margin:0;min-height:36px;padding:0 14px;font-size:12px;border:1px solid #cfd8cc;border-radius:999px;background:#fff;color:#176a49;font-weight:700;width:auto}
   .proj-ctrl{margin-top:8px}
 }
+
+/* Phones: slimmer photo galleries (swipe arrows + counter instead of the thumbnail strip) */
+@media(max-width:620px){
+  .project-card .project-gallery .project-photo{height:176px}
+  .project-gallery .project-photo-thumbs{display:none}
+  .project-photo-arrow{width:40px;height:40px}
+}
