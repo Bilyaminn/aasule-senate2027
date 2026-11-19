@@ -11,7 +11,7 @@ A hybrid of premium editorial presentation, modern interaction and institutional
 - Refined the biography timeline and achievement-card presentation.
 - Added responsive project search and filters for category, reported status and location.
 - Added result counts, status labels and accessible project-detail dialogs.
-- Removed the automatic mobile project-carousel timer; mobile navigation is now visitor-controlled.
+- Project carousel autoplay is available with a visible pause/play control; it pauses on hover/focus and respects reduced-motion preferences.
 
 ### Poster creator
 - Added JPG, PNG and WebP-only upload validation.
@@ -76,3 +76,11 @@ The site remains static and can be deployed to Vercel, Netlify or GitHub Pages w
 - Animated the mobile navigation disclosure, strengthened active-page indicators and added a persistent mobile poster-creator action on the main site pages.
 - Improved project-card swipe snapping, progress feedback, current/total count and previous/next boundary states.
 - Kept project navigation visitor-controlled; no autoplay timer is used.
+
+
+## Key sectors and flagship-first project showcase (November 2026)
+- Rebuilt the key sectors area to contain exactly four cards in the requested order: Investment & Enterprise; Infrastructure; Education & Health; Agriculture.
+- Investment & Enterprise now briefly covers NASIDA, the Avatar Lithium and Diamond New Energy processing investments, the Gudi Industrial Hub, Nasarawa Technology Village and other investment opportunities.
+- Increased the visual prominence and spacing of the project register, with a distinct flagship treatment for the first project.
+- Reordered the project register to put major industrial investments first, followed by major transport and strategic infrastructure projects, then the wider portfolio.
+- Restored project-carousel autoplay on horizontally scrolling layouts with a visible Pause/Play control. Autoplay advances every 5.2 seconds, loops to the beginning, pauses while the project rail is hovered or focused, and respects reduced-motion preferences. Visitors can still swipe or use the previous/next controls.

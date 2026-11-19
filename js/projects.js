@@ -32,6 +32,41 @@
     if (!deletedKeys.has(keyOf((card.querySelector('h3')?.textContent || '').trim()))) return;
     if (managerMode) { card.hidden = true; card.dataset.deleted = '1'; } else card.remove();
   });
+  // Curated flagship-first ordering: major industrial investments, then high-impact
+  // transport/infrastructure and strategic public facilities, followed by the wider register.
+  const flagshipOrder = [
+    'Diamond New Energy Lithium Plant',
+    'Avatar Lithium Processing Plant',
+    '₦30bn Agwada Cassava Industrial Hub',
+    'Mararaba Twin Flyovers',
+    'Asiwaju Bola Ahmed Tinubu Interchange',
+    'Usman Dan Fodio Airport completion',
+    'NASIDA investment & PPP pipeline',
+    'Nasarawa State Liaison Office, Kaduna (New Facility)',
+    'Akwanga Flyover, Underpass & Dualisation',
+    'Keffi Flyover',
+    '5km Shendam Road dualisation'
+  ];
+  const projectContainer = document.querySelector('.projects-grid');
+  const priority = title => {
+    const exact = flagshipOrder.indexOf(cleanTitle(title));
+    return exact < 0 ? flagshipOrder.length : exact;
+  };
+  const cleanTitle = title => (title || '').replace(/&amp;/g, '&').replace(/&#39;/g, "'").trim();
+  if (projectContainer) {
+    [...projectContainer.querySelectorAll('.project-card:not([data-deleted])')]
+      .sort((a,b) => priority(a.querySelector('h3')?.textContent) - priority(b.querySelector('h3')?.textContent))
+      .forEach((card,index) => {
+        card.classList.toggle('project-flagship', index === 0);
+        if (index === 0) {
+          const marker = document.createElement('span');
+          marker.className = 'flagship-label';
+          marker.textContent = 'FLAGSHIP PROJECT';
+          card.querySelector('.project-body')?.prepend(marker);
+        }
+        projectContainer.append(card);
+      });
+  }
   const cards = [...document.querySelectorAll('.project-card:not([data-deleted])')];
   const categoryButtons = [...document.querySelectorAll('.filter-btn')];
   const search = document.getElementById('projectSearch');
@@ -251,13 +286,37 @@
     if (!grid || sliderControls || !records.length) return;
     sliderControls = document.createElement('div');
     sliderControls.className = 'proj-ctrl';
-    sliderControls.innerHTML = '<button class="proj-btn" type="button" aria-label="Previous project">←</button><div class="proj-bar" aria-hidden="true"><i></i></div><span class="proj-count" aria-live="polite"></span><button class="proj-btn" type="button" aria-label="Next project">→</button>';
+    sliderControls.innerHTML = '<button class="proj-btn" type="button" aria-label="Previous project">←</button><div class="proj-bar" aria-hidden="true"><i></i></div><span class="proj-count" aria-live="polite"></span><button class="proj-btn" type="button" aria-label="Next project">→</button><button class="proj-autoplay" type="button" aria-pressed="true" aria-label="Pause project autoplay">Ⅱ <span>Pause</span></button>';
     grid.after(sliderControls);
     const [previous, next] = sliderControls.querySelectorAll('.proj-btn');
     previous.addEventListener('click', () => move(-1));
     next.addEventListener('click', () => move(1));
     grid.addEventListener('scroll', () => requestAnimationFrame(updateSlider), {passive:true});
     window.addEventListener('resize', updateSlider, {passive:true});
+    const autoplay = sliderControls.querySelector('.proj-autoplay');
+    let autoplayEnabled = !window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+    let autoplayTimer = null;
+    const setAutoplay = enabled => {
+      autoplayEnabled = enabled;
+      autoplay.setAttribute('aria-pressed', String(enabled));
+      autoplay.setAttribute('aria-label', enabled ? 'Pause project autoplay' : 'Start project autoplay');
+      autoplay.innerHTML = enabled ? 'Ⅱ <span>Pause</span>' : '▶ <span>Play</span>';
+      if (autoplayTimer) clearInterval(autoplayTimer);
+      autoplayTimer = enabled ? setInterval(() => {
+        if (document.hidden || grid.matches(':hover')) return;
+        const shown = visible();
+        if (shown.length < 2 || grid.scrollWidth <= grid.clientWidth + 2) return;
+        const max = grid.scrollWidth - grid.clientWidth;
+        if (grid.scrollLeft >= max - 4) grid.scrollTo({left:0,behavior:'smooth'});
+        else move(1);
+      }, 5200) : null;
+    };
+    autoplay.addEventListener('click', () => setAutoplay(!autoplayEnabled));
+    grid.addEventListener('mouseenter', () => { if (autoplayTimer) clearInterval(autoplayTimer); });
+    grid.addEventListener('mouseleave', () => { if (autoplayEnabled) setAutoplay(true); });
+    grid.addEventListener('focusin', () => { if (autoplayTimer) clearInterval(autoplayTimer); });
+    grid.addEventListener('focusout', () => { if (autoplayEnabled) setAutoplay(true); });
+    setAutoplay(autoplayEnabled);
   }
   function move(direction) {
     const shown = visible();
