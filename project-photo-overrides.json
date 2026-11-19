@@ -1,6 +1,17 @@
 {
-  "_version": "mwo2jq6q",
-  "_projects": [],
+  "_version": "mwo35xag",
+  "_projects": [
+    {
+      "title": "New Nasarawa State Secretariat Complex",
+      "location": "Lafia, Nasarawa State",
+      "category": "infrastructure",
+      "status": "Completed / commissioned",
+      "date": "Commissioned June 2025",
+      "description": "The New Nasarawa State Secretariat Complex is a modern administrative facility located along Shendam Road in Lafia (adjacent to the State High Court Complex), built under Governor Abdullahi Sule's administration. Designed in phases with multi-story wings, conference halls, executive suites, and workspaces intended to house key administrative offices—including the Office of the Secretary to the State Government (SSG) and the Office of the Head of Service—alongside state ministries.",
+      "sourceUrl": "",
+      "sourceLabel": "Project report"
+    }
+  ],
   "_deleted": [
     "nasida-investment-ppp-pipeline",
     "lafia-primary-healthcare-centre"
@@ -302,6 +313,42 @@
       {
         "src": "assets/projects/dalhatu-araf-specialist-hospital-dash-akwanga-2.webp",
         "alt": "Dalhatu Araf Specialist Hospital (DASH), Akwanga project photograph 2"
+      }
+    ]
+  },
+  "usman-dan-fodio-airport-completion": {
+    "photos": [
+      {
+        "src": "assets/projects/usman-dan-fodio-airport-completion-1.webp",
+        "alt": "Usman Dan Fodio Airport completion project photograph 1"
+      },
+      {
+        "src": "assets/projects/usman-dan-fodio-airport-completion-2.webp",
+        "alt": "Usman Dan Fodio Airport completion project photograph 2"
+      },
+      {
+        "src": "assets/projects/usman-dan-fodio-airport-completion-3.webp",
+        "alt": "Usman Dan Fodio Airport completion project photograph 3"
+      }
+    ]
+  },
+  "new-nasarawa-state-secretariat-complex": {
+    "photos": [
+      {
+        "src": "assets/projects/new-nasarawa-state-secretariat-complex-1.webp",
+        "alt": "New Nasarawa State Secretariat Complex project photograph 1"
+      },
+      {
+        "src": "assets/projects/new-nasarawa-state-secretariat-complex-2.webp",
+        "alt": "New Nasarawa State Secretariat Complex project photograph 2"
+      },
+      {
+        "src": "assets/projects/new-nasarawa-state-secretariat-complex-3.webp",
+        "alt": "New Nasarawa State Secretariat Complex project photograph 3"
+      },
+      {
+        "src": "assets/projects/new-nasarawa-state-secretariat-complex-4.webp",
+        "alt": "New Nasarawa State Secretariat Complex project photograph 4"
       }
     ]
   }
