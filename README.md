@@ -96,3 +96,10 @@ New project records are stored in the `_projects` array inside `project-photo-ov
 - **Manager drafts:** a saved draft is now authoritative, so removed photos and deletions stay removed after reload. "Reset to published site" discards the browser draft.
 - **Phones:** photo galleries use a slimmer layout (arrows + counter, no thumbnail strip).
 - Removed unused `css/style.css`.
+
+## Senate 2027 update
+- Homepage reframed around the Nasarawa North Senate bid: new hero, "The case for the Senate" section (each claim linked to a source), updated title/meta tags and about-page label.
+- Added the **New Nasarawa State Secretariat Complex** project (Lafia, commissioned 2025) and ranked it among the flagship projects.
+- **Edit projects:** Project Photo Manager → step 01C. Works for built-in and added projects; edits are saved as `_edits` and applied on the live site after export + redeploy. Built-in projects can be reverted to the original wording.
+- Reloading a page now returns to the top (back/forward navigation still restores your place).
+- Poster call-to-action buttons hardened (decorative layers can no longer sit over them).

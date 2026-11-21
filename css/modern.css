@@ -94,3 +94,9 @@ button.project-photo.has-photo{border:0;padding:0;width:100%;cursor:zoom-in;back
   .project-gallery .project-photo-thumbs{display:none}
   .project-photo-arrow{width:40px;height:40px}
 }
+
+/* Poster call-to-action: always clickable, never covered by decoration */
+.cta-section,.about-cta{position:relative;isolation:isolate}
+.cta-watermark{pointer-events:none;z-index:0}
+.cta-section .btn,.about-cta .btn{position:relative;z-index:2;touch-action:manipulation;cursor:pointer}
+.senate-section .source-note{margin-top:26px}

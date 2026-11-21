@@ -40,6 +40,7 @@
     '₦30bn Agwada Cassava Industrial Hub',
     'Mararaba Twin Flyovers',
     'Asiwaju Bola Ahmed Tinubu Interchange',
+    'New Nasarawa State Secretariat Complex',
     'Usman Dan Fodio Airport completion',
     'NASIDA investment & PPP pipeline',
     'Nasarawa State Liaison Office, Kaduna (New Facility)',
@@ -90,12 +91,42 @@
     if (/ongoing|operations|phased development/.test(t)) return 'Ongoing';
     return 'Reported';
   };
+  // Owner edits from the manager (_edits): keyed by the project's original title so photos keep matching.
+  const edits = projectManifest?._edits && typeof projectManifest._edits === 'object' ? projectManifest._edits : {};
+  cards.forEach(card => {
+    const origKey = keyOf((card.querySelector('h3')?.textContent || '').trim());
+    card.dataset.origKey = origKey;
+    const edit = managerMode ? null : edits[origKey];
+    if (!edit || typeof edit !== 'object') return;
+    const text = value => typeof value === 'string' ? value.replace(/\s+/g, ' ').trim() : '';
+    const body = card.querySelector('.project-body');
+    if (text(edit.title)) card.querySelector('h3').textContent = text(edit.title);
+    if (text(edit.description) && body?.querySelector('p')) body.querySelector('p').textContent = text(edit.description);
+    const meta = card.querySelector('.project-meta');
+    if (meta && (text(edit.location) || text(edit.statusLine))) {
+      const parts = (meta.textContent || '').split('·');
+      const loc = text(edit.location) || (parts[0] || '').trim();
+      const status = text(edit.statusLine) || parts.slice(1).join('·').trim();
+      meta.textContent = `${loc.toUpperCase()} · ${status.toUpperCase()}`;
+    }
+    if (validCategories.has(edit.category)) card.dataset.category = edit.category;
+    if (typeof edit.sourceUrl === 'string' && body) {
+      let link = body.querySelector(':scope > a');
+      if (!edit.sourceUrl.trim()) link?.remove();
+      else if (/^https:\/\//i.test(edit.sourceUrl.trim())) {
+        if (!link) { link = document.createElement('a'); link.target = '_blank'; link.rel = 'noopener noreferrer'; body.append(link); }
+        link.href = edit.sourceUrl.trim();
+        link.textContent = `${text(edit.sourceLabel) || 'Project report'} ↗`;
+      }
+    }
+  });
+
   const records = cards.map((card, index) => {
     const meta = clean(card.querySelector('.project-meta')?.textContent);
     const location = clean(meta.split('·')[0]) || 'Location not specified';
     const status = classifyStatus(meta);
     const title = clean(card.querySelector('h3')?.textContent) || `Project ${index + 1}`;
-    const projectKey = title.toLowerCase().normalize('NFKD').replace(/[\u0300-\u036f]/g, '').replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '');
+    const projectKey = card.dataset.origKey || title.toLowerCase().normalize('NFKD').replace(/[\u0300-\u036f]/g, '').replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '');
     card.dataset.projectKey = projectKey;
     const description = clean(card.querySelector('.project-body p')?.textContent);
     const source = card.querySelector('.project-body > a');
