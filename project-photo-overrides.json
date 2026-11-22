@@ -1,5 +1,11 @@
 {
+  "_version": "mwrx1nuj",
   "_projects": [],
+  "_deleted": [
+    "nasida-investment-ppp-pipeline",
+    "lafia-primary-healthcare-centre"
+  ],
+  "_edits": {},
   "nasarawa-state-liaison-office-kaduna-new-facility": {
     "photos": [
       {
@@ -272,19 +278,19 @@
       }
     ]
   },
-  "agwada-cassava-industrial-hub": {
+  "30bn-agwada-cassava-industrial-hub": {
     "photos": [
       {
-        "src": "assets/projects/agwada-cassava-industrial-hub-1.webp",
-        "alt": "Agwada Cassava Industrial Hub project photograph 1"
+        "src": "assets/projects/30bn-agwada-cassava-industrial-hub-1.webp",
+        "alt": "₦30bn Agwada Cassava Industrial Hub project photograph 1"
       },
       {
-        "src": "assets/projects/agwada-cassava-industrial-hub-2.webp",
-        "alt": "Agwada Cassava Industrial Hub project photograph 2"
+        "src": "assets/projects/30bn-agwada-cassava-industrial-hub-2.webp",
+        "alt": "₦30bn Agwada Cassava Industrial Hub project photograph 2"
       },
       {
-        "src": "assets/projects/agwada-cassava-industrial-hub-3.webp",
-        "alt": "Agwada Cassava Industrial Hub project photograph 3"
+        "src": "assets/projects/30bn-agwada-cassava-industrial-hub-3.webp",
+        "alt": "₦30bn Agwada Cassava Industrial Hub project photograph 3"
       }
     ]
   },
@@ -297,6 +303,106 @@
       {
         "src": "assets/projects/dalhatu-araf-specialist-hospital-dash-akwanga-2.webp",
         "alt": "Dalhatu Araf Specialist Hospital (DASH), Akwanga project photograph 2"
+      }
+    ]
+  },
+  "usman-dan-fodio-airport-completion": {
+    "photos": [
+      {
+        "src": "assets/projects/usman-dan-fodio-airport-completion-1.webp",
+        "alt": "Usman Dan Fodio Airport completion project photograph 1"
+      },
+      {
+        "src": "assets/projects/usman-dan-fodio-airport-completion-2.webp",
+        "alt": "Usman Dan Fodio Airport completion project photograph 2"
+      }
+    ]
+  },
+  "new-nasarawa-state-secretariat-complex": {
+    "photos": [
+      {
+        "src": "assets/projects/new-nasarawa-state-secretariat-complex-1.webp",
+        "alt": "New Nasarawa State Secretariat Complex project photograph 1"
+      },
+      {
+        "src": "assets/projects/new-nasarawa-state-secretariat-complex-2.webp",
+        "alt": "New Nasarawa State Secretariat Complex project photograph 2"
+      },
+      {
+        "src": "assets/projects/new-nasarawa-state-secretariat-complex-3.webp",
+        "alt": "New Nasarawa State Secretariat Complex project photograph 3"
+      },
+      {
+        "src": "assets/projects/new-nasarawa-state-secretariat-complex-4.webp",
+        "alt": "New Nasarawa State Secretariat Complex project photograph 4"
+      }
+    ]
+  },
+  "agwada-cassava-industrial-hub": {
+    "photos": [
+      {
+        "src": "assets/projects/agwada-cassava-industrial-hub-1.webp",
+        "alt": "Agwada Cassava Industrial Hub project photograph"
+      }
+    ]
+  },
+  "n-cares-agricultural-inputs-for-farmers": {
+    "photos": [
+      {
+        "src": "assets/projects/n-cares-agricultural-inputs-for-farmers-1.webp",
+        "alt": "N-CARES agricultural inputs for farmers project photograph 1"
+      },
+      {
+        "src": "assets/projects/n-cares-agricultural-inputs-for-farmers-2.webp",
+        "alt": "N-CARES agricultural inputs for farmers project photograph 2"
+      }
+    ]
+  },
+  "acresal-environmental-response-equipment": {
+    "photos": [
+      {
+        "src": "assets/projects/acresal-environmental-response-equipment-1.webp",
+        "alt": "ACReSAL environmental response equipment project photograph 1"
+      },
+      {
+        "src": "assets/projects/acresal-environmental-response-equipment-2.webp",
+        "alt": "ACReSAL environmental response equipment project photograph 2"
+      },
+      {
+        "src": "assets/projects/acresal-environmental-response-equipment-3.webp",
+        "alt": "ACReSAL environmental response equipment project photograph 3"
+      }
+    ]
+  },
+  "sani-abacha-yahaya-sabo-bus-terminals": {
+    "photos": [
+      {
+        "src": "assets/projects/sani-abacha-yahaya-sabo-bus-terminals-1.webp",
+        "alt": "Sani Abacha & Yahaya Sabo Bus Terminals project photograph 1"
+      },
+      {
+        "src": "assets/projects/sani-abacha-yahaya-sabo-bus-terminals-2.webp",
+        "alt": "Sani Abacha & Yahaya Sabo Bus Terminals project photograph 2"
+      },
+      {
+        "src": "assets/projects/sani-abacha-yahaya-sabo-bus-terminals-3.webp",
+        "alt": "Sani Abacha & Yahaya Sabo Bus Terminals project photograph 3"
+      }
+    ]
+  },
+  "ribi-jangwa-road": {
+    "photos": [
+      {
+        "src": "assets/projects/ribi-jangwa-road-1.webp",
+        "alt": "Ribi–Jangwa Road project photograph 1"
+      },
+      {
+        "src": "assets/projects/ribi-jangwa-road-2.webp",
+        "alt": "Ribi–Jangwa Road project photograph 2"
+      },
+      {
+        "src": "assets/projects/ribi-jangwa-road-3.webp",
+        "alt": "Ribi–Jangwa Road project photograph 3"
       }
     ]
   }
