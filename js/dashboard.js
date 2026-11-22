@@ -10,8 +10,11 @@
   const classifyStatus = value => { const t=value.toLowerCase(); if(/under construction|construction.*progress|advanced stages/.test(t))return 'Under construction'; if(/budgeted|budget provision/.test(t))return 'Budgeted'; if(/proposed|preparation stage|pipeline/.test(t))return 'Proposed'; if(/announced|groundbreaking/.test(t))return 'Announced'; if(/completed|commissioned|operational/.test(t))return 'Completed / commissioned'; if(/ongoing|operations|phased development/.test(t))return 'Ongoing'; return 'Reported'; };
   const statusOrder=['Completed / commissioned','Ongoing','Under construction','Announced','Budgeted','Proposed','Reported'];
   const hasLga = (location,lga) => { const a=location.toLowerCase().replace(/[^a-z0-9]+/g,' '), b=lga.toLowerCase(); return (` ${a} `).includes(` ${b} `); };
-  const state = {records:[],sector:'all',status:'all',lga:'all',query:''};
+  const state = {records:[],sector:'all',status:'all',lga:'all',query:'',photos:{}};
   const modal = $('#project-modal');
+  const photoModal=document.createElement('dialog');photoModal.className='dash-photo-modal';photoModal.setAttribute('aria-label','Project photograph');photoModal.innerHTML='<form method="dialog"><button class="dash-photo-close" aria-label="Close photograph">×</button></form><img alt="">';document.body.append(photoModal);
+  function showDashPhoto(src,alt){const img=$('img',photoModal);img.src=src;img.alt=alt||'Project photograph';if(typeof photoModal.showModal==='function')photoModal.showModal();else photoModal.setAttribute('open','');}
+  photoModal.addEventListener('click',e=>{if(e.target===photoModal)photoModal.close();});
 
   function parseCard(card, index, edits={}) {
     const originalTitle=clean($('h3',card)?.textContent);
@@ -34,10 +37,10 @@
   function renderCharts(records) {
     const sectorCounts=Object.fromEntries(Object.keys(sectorNames).map(k=>[k,records.filter(r=>r.sector===k).length]));
     const max=Math.max(1,...Object.values(sectorCounts));
-    $('#sector-chart').innerHTML=Object.entries(sectorNames).map(([key,label])=>`<div class="bar-row"><button type="button" data-sector-pick="${key}">${escapeHTML(label)}</button><div class="bar-track"><div class="bar-fill" style="width:${sectorCounts[key]/max*100}%"></div></div><span class="bar-count">${sectorCounts[key]}</span></div>`).join('');
+    $('#sector-chart').innerHTML=Object.entries(sectorNames).map(([key,label])=>{const count=sectorCounts[key],share=records.length?Math.round(count/records.length*100):0;return `<div class="bar-row ${state.sector===key?'is-selected':''}"><button type="button" data-sector-pick="${key}" aria-pressed="${state.sector===key}">${escapeHTML(label)}</button><div class="bar-track" role="img" aria-label="${count} records, ${share}% of register"><div class="bar-fill" style="width:${count/max*100}%"></div></div><span class="bar-count">${count}<small>${share}%</small></span></div>`;}).join('');
     $('#sector-chart').querySelectorAll('[data-sector-pick]').forEach(button=>button.addEventListener('click',()=>{state.sector=state.sector===button.dataset.sectorPick?'all':button.dataset.sectorPick;$('#dash-sector').value=state.sector;renderList();}));
     const statuses=statusOrder.filter(s=>records.some(r=>r.status===s));
-    $('#status-chart').innerHTML=statuses.map(s=>`<button type="button" class="status-row ${state.status===s?'active':''}" data-status-pick="${escapeHTML(s)}"><span>${escapeHTML(s)}</span><strong>${records.filter(r=>r.status===s).length}</strong></button>`).join('');
+    $('#status-chart').innerHTML=statuses.map(s=>{const count=records.filter(r=>r.status===s).length,share=records.length?Math.round(count/records.length*100):0;return `<button type="button" class="status-row ${state.status===s?'active':''}" data-status-pick="${escapeHTML(s)}" aria-pressed="${state.status===s}"><span>${escapeHTML(s)}</span><strong>${count}<small>${share}%</small></strong><i class="status-track"><b style="width:${share}%"></b></i></button>`;}).join('');
     $('#status-chart').querySelectorAll('[data-status-pick]').forEach(button=>button.addEventListener('click',()=>{state.status=state.status===button.dataset.statusPick?'all':button.dataset.statusPick;$('#dash-status').value=state.status;renderList();}));
   }
   function renderLgas(records) {
@@ -47,7 +50,10 @@
   function filtered() { return state.records.filter(r=>(state.sector==='all'||r.sector===state.sector)&&(state.status==='all'||r.status===state.status)&&(state.lga==='all'||hasLga(r.location,state.lga))&&(!state.query||r.search.includes(state.query))); }
   function openProject(record) {
     const content=$('#modal-content');
-    content.innerHTML=`<span class="modal-kicker">${escapeHTML(sectorNames[record.sector]||'Public project')}</span><h2>${escapeHTML(record.title)}</h2><div class="modal-facts"><span>${escapeHTML(record.location)}</span><span>${escapeHTML(record.status)}</span></div><p>${escapeHTML(record.description||'No additional description is available in the register.')}</p>${record.sourceUrl?`<a class="modal-source" href="${escapeHTML(record.sourceUrl)}" target="_blank" rel="noopener noreferrer">${escapeHTML(record.sourceLabel)} ↗</a>`:'<p>Source link not supplied in the current register.</p>'}<p class="register-footnote">Reported status is based on the linked public material and has not been independently audited.</p>`;
+    const photos=Array.isArray(state.photos[record.key]?.photos)?state.photos[record.key].photos:[];
+    const gallery=photos.length?`<div class="dash-modal-gallery" aria-label="Project photographs">${photos.slice(0,5).map((p,i)=>`<button type="button" class="dash-modal-photo" data-photo-src="${escapeHTML(p.src)}" data-photo-alt="${escapeHTML(p.alt||record.title)}" aria-label="View photograph ${i+1}"><img src="${escapeHTML(p.src)}" alt="${escapeHTML(p.alt||record.title)}" loading="lazy"><span>${i+1}</span></button>`).join('')}</div>`:'';
+    content.innerHTML=`<span class="modal-kicker">${escapeHTML(sectorNames[record.sector]||'Public project')}</span><h2>${escapeHTML(record.title)}</h2><div class="modal-facts"><span>${escapeHTML(record.location)}</span><span>${escapeHTML(record.status)}</span></div>${gallery}<p>${escapeHTML(record.description||'No additional description is available in the register.')}</p>${record.sourceUrl?`<a class="modal-source" href="${escapeHTML(record.sourceUrl)}" target="_blank" rel="noopener noreferrer">${escapeHTML(record.sourceLabel)} ↗</a>`:'<p>Source link not supplied in the current register.</p>'}<p class="register-footnote">Status follows the linked public report; it has not been independently audited.</p>`;
+    content.querySelectorAll('[data-photo-src]').forEach(button=>button.addEventListener('click',()=>showDashPhoto(button.dataset.photoSrc,button.dataset.photoAlt)));
     if(typeof modal.showModal==='function')modal.showModal();else modal.setAttribute('open','');
   }
   function renderList() {
@@ -66,6 +72,7 @@
       if(!htmlResponse.ok)throw new Error('Could not load the main project register.');
       const html=await htmlResponse.text(), doc=new DOMParser().parseFromString(html,'text/html');
       const manifest=manifestResponse?.ok?await manifestResponse.json().catch(()=>({})):{};
+      state.photos=manifest;
       const deleted=new Set(Array.isArray(manifest._deleted)?manifest._deleted:[]);
       state.records=$$('.project-card',doc).map((card,i)=>parseCard(card,i,manifest._edits||{})).filter(r=>!deleted.has(r.key));
       (Array.isArray(manifest._projects)?manifest._projects:[]).forEach((p,i)=>{if(!p||!clean(p.title))return;const status=classifyStatus(p.status||'Reported');const r={key:`custom-${keyOf(p.title)}`,title:clean(p.title),location:clean(p.location||'Location not specified'),status,statusLine:clean(p.status),description:clean(p.description),sector:sectorNames[p.category]?p.category:'infrastructure',sourceUrl:/^https:\/\//i.test(p.sourceUrl||'')?p.sourceUrl:'',sourceLabel:clean(p.sourceLabel||'Project report'),search:`${p.title} ${p.location||''} ${p.status||''} ${p.description||''}`.toLowerCase(),index:state.records.length+i};state.records.push(r);});

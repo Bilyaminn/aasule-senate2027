@@ -103,3 +103,8 @@ New project records are stored in the `_projects` array inside `project-photo-ov
 - **Edit projects:** Project Photo Manager → step 01C. Works for built-in and added projects; edits are saved as `_edits` and applied on the live site after export + redeploy. Built-in projects can be reverted to the original wording.
 - Reloading a page now returns to the top (back/forward navigation still restores your place).
 - Poster call-to-action buttons hardened (decorative layers can no longer sit over them).
+
+
+## Dashboard hero
+- The homepage hero is now a dashboard-style "record at a glance": headline and calls to action on the left; portrait, live KPI tiles (projects documented, completed, in progress, locations) and a by-sector chart on the right. Figures come from the same live project data as the register (including edits/deletions), through the `register:stats` event in `js/projects.js` → `js/hero.js`; static numbers in the HTML are only a no-JavaScript fallback.
+- "Nasarawa North" is no longer repeated across the hero, brand line and image captions; it appears once in the hero text. Styles: `css/hero-dashboard.css`.

@@ -309,6 +309,8 @@
     put('dashCompleted', completedCount);
     put('dashOngoing', ongoingCount);
     put('dashLocations', distinctLocations);
+    window.__registerStats = {total: records.length, completed: completedCount, ongoing: ongoingCount, locations: distinctLocations, sectors: sectorCounts};
+    window.dispatchEvent(new CustomEvent('register:stats', {detail: window.__registerStats}));
 
     const makeBar = (containerId, label, count, total, onClick, detail) => {
       const host = document.getElementById(containerId); if (!host) return;
