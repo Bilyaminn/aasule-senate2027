@@ -1,0 +1,31 @@
+
+/* Campaign site refresh — compact editorial layout and clearer reading rhythm. */
+.hero-content{max-width:640px}
+.hero h1{font-size:clamp(48px,5.7vw,78px);line-height:1.01;letter-spacing:-.075em}
+.hero-text{max-width:490px;font-size:15px;line-height:1.8}
+.hero-foot{flex-wrap:wrap;row-gap:9px}
+.section-pad{padding-top:82px;padding-bottom:82px}
+.section-head{margin-bottom:34px;gap:56px}
+.section-head>p{max-width:470px}
+.record-card{min-height:0;padding:26px 28px 28px}
+.record-card p{line-height:1.78}
+.record-card h3{margin-bottom:12px}
+.source-note{max-width:900px;margin:24px auto 0;color:#738178;font-size:12px;line-height:1.7}
+.projects-section .section-head{margin-bottom:32px}
+.dashboard-heading{align-items:flex-end}
+.dashboard-cta{border-radius:14px}
+.cta-section{background-image:radial-gradient(ellipse at 85% 20%,rgba(197,231,160,.12),transparent 38%)}
+@media(max-width:800px){
+  .hero{grid-template-columns:1fr;padding:0 25px}
+  .hero-content{padding:64px 0 25px}
+  .hero h1{font-size:clamp(46px,11vw,68px)}
+  .hero-image-wrap{height:min(112vw,470px);width:min(86%,390px);margin-top:8px}
+  .hero-side-note{display:none}
+  .section-pad{padding:62px 22px}
+  .section-head{grid-template-columns:1fr;gap:16px}
+}
+@media(max-width:560px){
+  .hero-foot{font-size:8px;letter-spacing:.1em}
+  .hero-actions{gap:16px}
+  .record-card{padding:22px}
+}
