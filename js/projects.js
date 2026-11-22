@@ -35,12 +35,12 @@
   // Curated flagship-first ordering: major industrial investments, then high-impact
   // transport/infrastructure and strategic public facilities, followed by the wider register.
   const flagshipOrder = [
+    'New Nasarawa State Secretariat Complex',
     'Diamond New Energy Lithium Plant',
     'Avatar Lithium Processing Plant',
     '₦30bn Agwada Cassava Industrial Hub',
     'Mararaba Twin Flyovers',
     'Asiwaju Bola Ahmed Tinubu Interchange',
-    'New Nasarawa State Secretariat Complex',
     'Usman Dan Fodio Airport completion',
     'NASIDA investment & PPP pipeline',
     'Nasarawa State Liaison Office, Kaduna (New Facility)',
@@ -288,6 +288,67 @@
     if (grid) grid.scrollTo({left: 0, behavior: 'smooth'});
     updateSlider();
   }
+
+  // Interactive project dashboard: all figures are calculated from the same live
+  // project records used by the searchable register, never from hard-coded totals.
+  const dashboard = document.querySelector('.project-dashboard');
+  if (dashboard) {
+    const sectorLabels = {infrastructure:'Infrastructure', industry:'Industry & investment', health:'Health & education', agriculture:'Agriculture & environment'};
+    const sectorCounts = Object.fromEntries(Object.keys(sectorLabels).map(key => [key, records.filter(r => r.card.dataset.category === key).length]));
+    const statusCounts = records.reduce((out, r) => { out[r.status] = (out[r.status] || 0) + 1; return out; }, {});
+    const locationCounts = {};
+    records.forEach(r => {
+      const parts = (r.location || 'Location not specified').split(/,| & | and /).map(clean).filter(Boolean);
+      [...new Set(parts)].forEach(label => { locationCounts[label] = (locationCounts[label] || 0) + 1; });
+    });
+    const completedCount = records.filter(r => r.status === 'Completed / commissioned').length;
+    const ongoingCount = records.filter(r => r.status === 'Ongoing' || r.status === 'Under construction').length;
+    const distinctLocations = Object.keys(locationCounts).length;
+    const put = (id, value) => { const el = document.getElementById(id); if (el) el.textContent = String(value); };
+    put('dashTotal', records.length);
+    put('dashCompleted', completedCount);
+    put('dashOngoing', ongoingCount);
+    put('dashLocations', distinctLocations);
+
+    const makeBar = (containerId, label, count, total, onClick, detail) => {
+      const host = document.getElementById(containerId); if (!host) return;
+      const button = document.createElement('button');
+      button.type = 'button'; button.className = 'dashboard-bar-row';
+      button.setAttribute('aria-label', `${label}: ${count} records. ${detail || 'Filter project register'}`);
+      const top = document.createElement('span'); top.className = 'dashboard-bar-top';
+      const name = document.createElement('span'); name.textContent = label;
+      const number = document.createElement('strong'); number.textContent = count;
+      top.append(name, number);
+      const track = document.createElement('span'); track.className = 'dashboard-track';
+      const fill = document.createElement('i'); fill.style.width = `${total ? Math.round(count / total * 100) : 0}%`;
+      track.append(fill); button.append(top, track);
+      button.addEventListener('click', onClick); host.append(button);
+    };
+    Object.entries(sectorLabels).forEach(([key, label]) => {
+      makeBar('dashSectors', label, sectorCounts[key], records.length, () => {
+        const filter = categoryButtons.find(b => b.dataset.filter === key); filter?.click();
+        document.getElementById('projects')?.scrollIntoView({behavior:'smooth',block:'start'});
+      }, 'Show projects in this sector');
+    });
+    Object.entries(statusCounts).sort((a,b)=>b[1]-a[1]).forEach(([status,count]) => {
+      makeBar('dashStatuses', status, count, records.length, () => {
+        if (statusSelect) { statusSelect.value = status; applyFilters(); }
+        document.getElementById('projects')?.scrollIntoView({behavior:'smooth',block:'start'});
+      }, 'Filter by reported status');
+    });
+    Object.entries(locationCounts).sort((a,b)=>b[1]-a[1]).slice(0,6).forEach(([location,count]) => {
+      const row = document.createElement('button'); row.type='button'; row.className='dashboard-location-row';
+      const name=document.createElement('span'); name.textContent=location;
+      const number=document.createElement('strong'); number.textContent=count;
+      row.append(name,number);
+      row.addEventListener('click',()=>{
+        if(locationSelect){ locationSelect.value=location; applyFilters(); }
+        document.getElementById('projects')?.scrollIntoView({behavior:'smooth',block:'start'});
+      });
+      document.getElementById('dashLocationsList')?.append(row);
+    });
+  }
+
   categoryButtons.forEach(button => button.addEventListener('click', () => {
     activeCategory = button.dataset.filter;
     categoryButtons.forEach(item => {

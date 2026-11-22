@@ -84,3 +84,11 @@ The site remains static and can be deployed to Vercel, Netlify or GitHub Pages w
 - Increased the visual prominence and spacing of the project register, with a distinct flagship treatment for the first project.
 - Reordered the project register to put major industrial investments first, followed by major transport and strategic infrastructure projects, then the wider portfolio.
 - Restored project-carousel autoplay on horizontally scrolling layouts with a visible Pause/Play control. Autoplay advances every 5.2 seconds, loops to the beginning, pauses while the project rail is hovered or focused, and respects reduced-motion preferences. Visitors can still swipe or use the previous/next controls.
+
+
+## Dedicated project dashboard (November 2026)
+- Added `project-dashboard.html`, a standalone interactive public-project dashboard linked from the main navigation and homepage project section.
+- The dashboard reads the existing homepage project cards and `project-photo-overrides.json`, so it reflects project edits, deleted entries and custom additions without maintaining a second hard-coded project catalogue.
+- Added summary metrics, sector bars, status breakdown, 13 selectable LGA filters, keyword search, sector/status filters, reset controls and project-detail dialogs with source links.
+- The LGA explorer is intentionally an indexed selector rather than a geographic boundary map. The project register mostly contains broad location labels rather than verified coordinates, and no verified boundary layer was supplied. NAGIS is linked as the State's official GIS source; a true choropleth/pin map should be added only after obtaining the appropriate boundary data and verifying each project's location.
+- Counts are register counts, not a complete independent inventory of every public project in Nasarawa State. Status labels reflect source wording and are not an independent audit.

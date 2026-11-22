@@ -23,6 +23,15 @@ if (nav) {
     }
   });
 }
+// Route every poster CTA through one explicit navigation handler.
+document.querySelectorAll('a[href="generate.html"]').forEach(link => {
+  link.addEventListener('click', event => {
+    if (event.defaultPrevented || event.button !== 0 || event.metaKey || event.ctrlKey || event.shiftKey || event.altKey) return;
+    event.preventDefault();
+    window.location.assign(new URL(link.getAttribute('href'), document.baseURI).href);
+  });
+});
+
 if (!/generate\.html$/i.test(location.pathname)) {
   document.body.classList.add('has-persistent-cta');
   const cta = document.createElement('a');
