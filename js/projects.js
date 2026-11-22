@@ -38,7 +38,7 @@
     'New Nasarawa State Secretariat Complex',
     'Diamond New Energy Lithium Plant',
     'Avatar Lithium Processing Plant',
-    '₦30bn Agwada Cassava Industrial Hub',
+    'Agwada Cassava Industrial Hub',
     'Mararaba Twin Flyovers',
     'Asiwaju Bola Ahmed Tinubu Interchange',
     'Usman Dan Fodio Airport completion',

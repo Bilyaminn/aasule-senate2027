@@ -108,3 +108,11 @@ New project records are stored in the `_projects` array inside `project-photo-ov
 ## Dashboard hero
 - The homepage hero is now a dashboard-style "record at a glance": headline and calls to action on the left; portrait, live KPI tiles (projects documented, completed, in progress, locations) and a by-sector chart on the right. Figures come from the same live project data as the register (including edits/deletions), through the `register:stats` event in `js/projects.js` → `js/hero.js`; static numbers in the HTML are only a no-JavaScript fallback.
 - "Nasarawa North" is no longer repeated across the hero, brand line and image captions; it appears once in the hero text. Styles: `css/hero-dashboard.css`.
+
+## Sharing, SEO and CSS (latest)
+**Share tags / sitemap.** Every public page has a canonical link, `og:url`, an absolute 1200×630 share image (`og-image.jpg`) and Twitter card tags; `sitemap.xml` and `robots.txt` are included. They contain the placeholder `__SITE_URL__`, which `tools/set-site-url.mjs` fills in:
+- **On Vercel:** automatic (`vercel.json` → `buildCommand`). It uses the project's production domain, or the `SITE_URL` environment variable if you set one (do this when you add a custom domain). If no domain is available, the tags are left out instead of publishing placeholders.
+- **Anywhere else / locally:** `node tools/set-site-url.mjs https://your-domain.com`
+After deploying, open the page source and confirm the canonical link shows your real address, then test a link in the Facebook Sharing Debugger / WhatsApp. Social networks cache previews, so re-scrape after changes.
+
+**One stylesheet.** `css/main.css` now serves the home, about and project-dashboard pages (it replaces `site`, `modern`, `upgrade`, `campaign-refresh`, `premium-home`, `hero-dashboard`, `dashboard` and `modern-data`). Rules that belong to one page are scoped with `:where(.page-home)` / `:where(.page-dashboard)` (zero extra specificity) so no page changed appearance; ~70 dead selectors (the old hero, etc.) were removed. The poster page keeps `css/generate.css` (its own app styles, now purged and including the few shared rules it used) and the admin tool keeps `css/project-photo-manager.css`. Before/after screenshots at three widths plus open dialogs matched within 0.06% of pixels.
